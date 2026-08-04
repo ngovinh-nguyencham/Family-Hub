@@ -417,7 +417,7 @@ async function init(){
             fetchCSV(urlMON),
             fetchCSV(urlPHOTO)
         ]);
-
+        console.log(photoData);
         // Không có dữ liệu
         if(tkb.length===0){
 
