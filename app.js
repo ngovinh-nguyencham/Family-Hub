@@ -93,7 +93,11 @@ function createSubjectMap(monhoc){
 
     monhoc.forEach(m=>{
 
-        map[m["Môn"]] = m;
+        const tenMon = (m["Môn"] || "")
+            .trim()
+            .toLowerCase();
+
+        map[tenMon] = m;
 
     });
 
@@ -138,7 +142,11 @@ function drawSchedule(tkb, subjectMap){
 
         Object.values(row).forEach(value=>{
 
-            const info = subjectMap[value];
+            const info = subjectMap[
+                (value || "")
+                    .trim()
+                    .toLowerCase()
+            ];
 
             if(info){
 
@@ -200,7 +208,11 @@ function drawBag(tkb, subjectMap){
 
         usedSubjects.add(mon);
 
-        const info = subjectMap[mon];
+        const info = subjectMap[
+            (mon || "")
+                .trim()
+                .toLowerCase()
+        ];
 
         if(!info) return;
 
