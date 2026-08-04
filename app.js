@@ -146,3 +146,87 @@ function drawSchedule(tkb, monhoc){
     document.getElementById("schedule").innerHTML = html;
 
 }
+//=========================
+// HÔM NAY CẦN MANG
+//=========================
+
+function drawBag(tkb, monhoc){
+
+    const today = getTodayColumn();
+
+    let html = "";
+
+    tkb.forEach(row=>{
+
+        const mon = row[today];
+
+        if(!mon || mon=="") return;
+
+        const info = getSubjectInfo(monhoc, mon);
+
+        if(!info) return;
+
+        const color = info["Màu"] || "#2196F3";
+
+        const tools = (info["Đồ dùng"] || "")
+            .split("|")
+            .filter(x=>x.trim()!="")
+            .map(x=>`<div>✏️ ${x}</div>`)
+            .join("");
+
+        html += `
+        <div class="item"
+            style="border-left:8px solid ${color};">
+
+            <h3 style="color:${color}">
+                ${mon}
+            </h3>
+
+            ${
+                info["Sách Giáo Khoa"]=="TRUE"
+                ?"<div>📘 Sách Giáo Khoa</div>"
+                :""
+            }
+
+            ${
+                info["Sách Bài Tập"]=="TRUE"
+                ?"<div>📗 Sách Bài Tập</div>"
+                :""
+            }
+
+            ${
+                info["Vở"]!="-"
+                ?`<div>📒 ${info["Vở"]}</div>`
+                :""
+            }
+
+            ${tools}
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById("todayBag").innerHTML = html;
+
+}
+
+
+
+//=========================
+// KHỞI ĐỘNG
+//=========================
+
+async function init(){
+
+    const tkb = await fetchCSV(urlTKB);
+
+    const monhoc = await fetchCSV(urlMON);
+
+    drawSchedule(tkb, monhoc);
+
+    drawBag(tkb, monhoc);
+
+}
+
+init();
