@@ -193,7 +193,8 @@ function drawBag(tkb, subjectMap){
     const today = getTodayColumn();
 
     let html = "";
-
+    // Gom đồ dùng trùng nhau
+    const toolSet = new Set();
     // Danh sách môn đã hiển thị
     const usedSubjects = new Set();
 
@@ -218,13 +219,12 @@ function drawBag(tkb, subjectMap){
 
         const color = info["Màu"] || "#64B5F6";
 
-        // Đồ dùng
-        const tools = (info["Đồ dùng"] || "")
-            .split("|")
-            .map(x=>x.trim())
-            .filter(x=>x!=="")
-            .map(x=>`<div>🧰 ${x}</div>`)
-            .join("");
+        // Gom đồ dùng
+            (info["Đồ dùng"] || "")
+                .split("|")
+                .map(x=>x.trim())
+                .filter(x=>x!=="")
+                .forEach(x=>toolSet.add(x));
 
         html += `
 
@@ -265,17 +265,40 @@ function drawBag(tkb, subjectMap){
                 :""
             }
 
-            ${
-                tools!==""
-                ?`<hr>${tools}`
-                :""
-            }
-
         </div>
 
         `;
 
     });
+
+            // Hiển thị đồ dùng chung
+            if(toolSet.size > 0){
+
+                html += `
+
+                <div class="item">
+
+                    <h3
+                        style="
+                            background:#90CAF9;
+                            color:#333;
+                            padding:8px;
+                            border-radius:8px;
+                            text-align:center;
+                        ">
+                        🧰 Đồ dùng cần mang
+                    </h3>
+
+                    ${[...toolSet]
+                        .sort()
+                        .map(x=>`<div>🧰 ${x}</div>`)
+                        .join("")}
+
+                </div>
+
+                `;
+
+            }
 
     if(html===""){
 
