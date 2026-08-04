@@ -1,3 +1,7 @@
+//=========================
+// GOOGLE SHEET
+//=========================
+
 const sheetID = "1ysNYpooAXu07MsLfL3XNxVSbzBlntueaXgRcksx5nXk";
 
 const urlTKB =
@@ -5,6 +9,11 @@ const urlTKB =
 
 const urlMON =
 `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=757851887`;
+
+
+//=========================
+// ĐỌC FILE CSV
+//=========================
 
 async function fetchCSV(url){
 
@@ -14,21 +23,21 @@ async function fetchCSV(url){
 
     const rows = text
         .split(/\r?\n/)
-        .filter(r => r !== "")
+        .filter(r => r.trim() != "")
         .map(r =>
             r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-             .map(c => c.replace(/^"(.*)"$/, "$1"))
+            .map(c => c.replace(/^"(.*)"$/, "$1"))
         );
 
     const header = rows[0];
 
-    return rows.slice(1).map(r => {
+    return rows.slice(1).map(r=>{
 
         let obj = {};
 
         header.forEach((h,i)=>{
 
-            obj[h]=r[i];
+            obj[h] = r[i] || "";
 
         });
 
@@ -38,69 +47,75 @@ async function fetchCSV(url){
 
 }
 
+
+//=========================
+// HÔM NAY LÀ THỨ MẤY
+//=========================
+
 function getTodayColumn(){
 
-    const d = new Date().getDay();
+    const day = new Date().getDay();
 
-    switch(d){
+    switch(day){
 
         case 1: return "Thứ 2";
         case 2: return "Thứ 3";
         case 3: return "Thứ 4";
         case 4: return "Thứ 5";
         case 5: return "Thứ 6";
+        case 6: return "Thứ 7";
 
-        default: return "Thứ 2";
+        default:
+
+            return "Chủ Nhật";
 
     }
 
 }
 
-async function init(){
 
-    const tkb = await fetchCSV(urlTKB);
+//=========================
+// LẤY THÔNG TIN MÔN
+//=========================
 
-    const monhoc = await fetchCSV(urlMON);
+function getSubjectInfo(monhoc,name){
 
-    drawSchedule(tkb,monhoc);
-
-    drawBag(tkb,monhoc);
+    return monhoc.find(x=>x["Môn"]===name);
 
 }
+//=========================
+// HIỂN THỊ THỜI KHÓA BIỂU
+//=========================
 
-function drawSchedule(tkb,monhoc){
+function drawSchedule(tkb, monhoc){
 
-    let html="<table>";
+    if(tkb.length===0) return;
 
-    html+="<tr>";
+    let html = "<table>";
+
+    // Tiêu đề
+    html += "<tr>";
 
     Object.keys(tkb[0]).forEach(h=>{
 
-        html+=`<th>${h}</th>`;
+        html += `<th>${h}</th>`;
 
     });
 
-    html+="</tr>";
+    html += "</tr>";
 
-    tkb.forEach(r=>{
+    // Nội dung
+    tkb.forEach(row=>{
 
-        html+="<tr>";
+        html += "<tr>";
 
-        Object.values(r).forEach(v=>{
+        Object.values(row).forEach(value=>{
 
-            let color="";
+            const info = getSubjectInfo(monhoc,value);
 
-            monhoc.forEach(m=>{
+            if(info){
 
-                if(m["Môn"]===v){
-
-                    color=m["Màu"];
-
-                }
-
-            });
-
-            if (color) {
+                const color = info["Màu"] || "#eeeeee";
 
                 html += `
                 <td
@@ -110,72 +125,24 @@ function drawSchedule(tkb,monhoc){
                         font-weight:bold;
                         border:1px solid ${color};
                     ">
-                    ${v}
-                </td>`;
+                    ${value}
+                </td>
+                `;
 
-            } else {
+            }else{
 
-                html += `<td>${v}</td>`;
+                html += `<td>${value}</td>`;
 
             }
 
         });
 
-        html+="</tr>";
+        html += "</tr>";
 
     });
 
-    html+="</table>";
+    html += "</table>";
 
-    document.getElementById("schedule").innerHTML=html;
-
-}
-
-function drawBag(tkb,monhoc){
-
-    const col=getTodayColumn();
-
-    let html="";
-
-    tkb.forEach(r=>{
-
-        const mon=r[col];
-
-        const m=monhoc.find(x=>x["Môn"]===mon);
-
-        if(!m) return;
-
-        const sgk=m["Sách Giáo Khoa"]==="TRUE";
-        const sbt=m["Sách Bài Tập"]==="TRUE";
-
-        const tools=(m["Đồ dùng"]||"")
-            .split("|")
-            .filter(x=>x.trim()!=="")
-            .map(x=>`✏️ ${x.trim()}`)
-            .join("<br>");
-
-        html+=`
-
-        <div class="item">
-
-            <h3>${mon}</h3>
-
-            ${sgk ? "📘 SGK<br>" : ""}
-
-            ${sbt ? "📗 SBT<br>" : ""}
-
-            ${m["Vở"] && m["Vở"]!="-" ? `📒 ${m["Vở"]}<br>` : ""}
-
-            ${tools}
-
-        </div>
-
-        `;
-
-    });
-
-    document.getElementById("todayBag").innerHTML=html;
+    document.getElementById("schedule").innerHTML = html;
 
 }
-
-init();
