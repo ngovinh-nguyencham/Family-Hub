@@ -1,30 +1,30 @@
-const sheetID="1ysNYpooAXu07MsLfL3XNxVSbzBlntueaXgRcksx5nXk";
+const sheetID = "1ysNYpooAXu07MsLfL3XNxVSbzBlntueaXgRcksx5nXk";
 
-const urlTKB=
+const urlTKB =
 `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=0`;
 
-const urlMON=
+const urlMON =
 `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=757851887`;
 
 async function fetchCSV(url){
 
-    const res=await fetch(url+"&t="+Date.now());
+    const res = await fetch(url + "&t=" + Date.now());
 
-    const text=await res.text();
+    const text = await res.text();
 
-    const rows=text
+    const rows = text
         .split(/\r?\n/)
-        .filter(r=>r!="")
-        .map(r=>
+        .filter(r => r !== "")
+        .map(r =>
             r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-            .map(c=>c.replace(/^"(.*)"$/,'$1'))
+             .map(c => c.replace(/^"(.*)"$/, "$1"))
         );
 
-    const header=rows[0];
+    const header = rows[0];
 
-    return rows.slice(1).map(r=>{
+    return rows.slice(1).map(r => {
 
-        let obj={};
+        let obj = {};
 
         header.forEach((h,i)=>{
 
@@ -40,21 +40,17 @@ async function fetchCSV(url){
 
 function getTodayColumn(){
 
-    const d=new Date().getDay();
+    const d = new Date().getDay();
 
     switch(d){
 
-        case 1:return "Thứ 2";
+        case 1: return "Thứ 2";
+        case 2: return "Thứ 3";
+        case 3: return "Thứ 4";
+        case 4: return "Thứ 5";
+        case 5: return "Thứ 6";
 
-        case 2:return "Thứ 3";
-
-        case 3:return "Thứ 4";
-
-        case 4:return "Thứ 5";
-
-        case 5:return "Thứ 6";
-
-        default:return "Thứ 2";
+        default: return "Thứ 2";
 
     }
 
@@ -62,9 +58,9 @@ function getTodayColumn(){
 
 async function init(){
 
-    const tkb=await fetchCSV(urlTKB);
+    const tkb = await fetchCSV(urlTKB);
 
-    const monhoc=await fetchCSV(urlMON);
+    const monhoc = await fetchCSV(urlMON);
 
     drawSchedule(tkb,monhoc);
 
@@ -96,19 +92,33 @@ function drawSchedule(tkb,monhoc){
 
             monhoc.forEach(m=>{
 
-                if(m["Môn"]==v)
+                if(m["Môn"]===v){
 
                     color=m["Màu"];
 
+                }
+
             });
 
-            if(color!="")
+            if(color){
 
-                html+=`<td style="background:${color};color:white">${v}</td>`;
+                html+=`
+                <td
+                style="
+                background:${color}22;
+                color:#333;
+                border:1px solid ${color};
+                font-weight:bold;
+                ">
+                ${v}
+                </td>
+                `;
 
-            else
+            }else{
 
                 html+=`<td>${v}</td>`;
+
+            }
 
         });
 
@@ -124,37 +134,44 @@ function drawSchedule(tkb,monhoc){
 
 function drawBag(tkb,monhoc){
 
-    let col=getTodayColumn();
-
-    let list=[];
-
-    tkb.forEach(r=>{
-
-        list.push(r[col]);
-
-    });
+    const col=getTodayColumn();
 
     let html="";
 
-    list.forEach(mon=>{
+    tkb.forEach(r=>{
 
-        let m=monhoc.find(x=>x["Môn"]==mon);
+        const mon=r[col];
 
-        if(!m)return;
+        const m=monhoc.find(x=>x["Môn"]===mon);
 
-        html+=`<div class="item">
+        if(!m) return;
 
-<b>${mon}</b><br>
+        const sgk=m["Sách Giáo Khoa"]==="TRUE";
+        const sbt=m["Sách Bài Tập"]==="TRUE";
 
-${m["Sách Giáo Khoa"]=="TRUE"?"📘 SGK<br>":""}
+        const tools=(m["Đồ dùng"]||"")
+            .split("|")
+            .filter(x=>x.trim()!=="")
+            .map(x=>`✏️ ${x.trim()}`)
+            .join("<br>");
 
-${m["Sách Bài Tập"]=="TRUE"?"📗 SBT<br>":""}
+        html+=`
 
-📒 ${m["Vở"]}<br>
+        <div class="item">
 
-✏️ ${m["Đồ dùng"]}
+            <h3>${mon}</h3>
 
-</div>`;
+            ${sgk ? "📘 SGK<br>" : ""}
+
+            ${sbt ? "📗 SBT<br>" : ""}
+
+            ${m["Vở"] && m["Vở"]!="-" ? `📒 ${m["Vở"]}<br>` : ""}
+
+            ${tools}
+
+        </div>
+
+        `;
 
     });
 
