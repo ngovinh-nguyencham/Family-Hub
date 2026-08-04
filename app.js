@@ -171,7 +171,7 @@ function drawBag(tkb, monhoc){
         const tools = (info["Đồ dùng"] || "")
             .split("|")
             .filter(x=>x.trim()!="")
-            .map(x=>`<div>✏️ ${x}</div>`)
+            .map(x=>`<div>🧰 ${x}</div>`)
             .join("");
 
         html += `
