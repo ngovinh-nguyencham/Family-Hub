@@ -357,25 +357,25 @@ function drawBag(tkb, subjectMap){
 
 function startPhotoSlide(photoData){
 
+    console.log("photoData =", photoData);
+    console.log("photoData[0] =", photoData[0]);
+    console.log("Keys =", Object.keys(photoData[0]));
+
     photos = photoData
-        .map(x => (x["Link"] || "").trim())
-        .filter(x => x !== "");
+        .map(x => x["Link"])
+        .filter(x => x);
 
     console.log("photos =", photos);
 
     const img = document.getElementById("familyPhoto");
 
-    console.log("Ảnh đầu tiên:", photos[0]);
-
     img.src = photos[0];
 
-    img.onload = () => {
-        console.log("Đã tải ảnh");
-    };
+    console.log("src =", img.src);
 
-    img.onerror = () => {
-        console.log("Lỗi tải ảnh");
-    };
+    img.onload = () => console.log("Đã tải ảnh");
+
+    img.onerror = () => console.log("Lỗi tải ảnh");
 }
 //==================================================
 // PART 3/3
