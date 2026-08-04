@@ -17,16 +17,6 @@ const urlTKB =
 const urlMON =
 `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=757851887`;
 
-const urlPHOTO =
-`https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=332630721`;
-
-//=========================
-// ẢNH GIA ĐÌNH
-//=========================
-
-let photos = [];
-let currentPhoto = 0;
-let slideTimer = null;
 
 //=========================
 // ĐỌC FILE CSV
@@ -351,32 +341,6 @@ function drawBag(tkb, subjectMap){
 
 }
 
-//=========================
-// SLIDESHOW ẢNH
-//=========================
-
-function startPhotoSlide(photoData){
-
-    console.log("photoData =", photoData);
-    console.log("photoData[0] =", photoData[0]);
-    console.log("Keys =", Object.keys(photoData[0]));
-
-    photos = photoData
-        .map(x => x["Link"])
-        .filter(x => x);
-
-    console.log("photos =", photos);
-
-    const img = document.getElementById("familyPhoto");
-
-    img.src = photos[0];
-
-    console.log("src =", img.src);
-
-    img.onload = () => console.log("Đã tải ảnh");
-
-    img.onerror = () => console.log("Lỗi tải ảnh");
-}
 //==================================================
 // PART 3/3
 // KHỞI ĐỘNG
@@ -387,14 +351,11 @@ async function init(){
     try{
 
         // Đọc đồng thời 2 Google Sheet
-        const [tkb, monhoc, photoData] = await Promise.all([
+        const [tkb, monhoc] = await Promise.all([
             fetchCSV(urlTKB),
             fetchCSV(urlMON),
-            fetchCSV(urlPHOTO)
         ]);
-        console.log(photoData);
-        console.log(photoData[0]);
-        console.log(Object.keys(photoData[0]));
+
         // Không có dữ liệu
         if(tkb.length===0){
 
@@ -416,7 +377,6 @@ async function init(){
 
         drawBag(tkb, subjectMap);
 
-        startPhotoSlide(photoData);
 
     }
     catch(err){
