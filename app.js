@@ -393,6 +393,8 @@ async function init(){
             fetchCSV(urlPHOTO)
         ]);
         console.log(photoData);
+        console.log(photoData[0]);
+        console.log(Object.keys(photoData[0]));
         // Không có dữ liệu
         if(tkb.length===0){
 
