@@ -4,32 +4,55 @@ const urlTKB =
 const urlMonHoc =
 "https://docs.google.com/spreadsheets/d/1ysNYpooAXu07MsLfL3XNxVSbzBlntueaXgRcksx5nXk/gviz/tq?tqx=out:csv&gid=757851887";
 
-async function fetchCSV(url){
+async function fetchCSV(url) {
 
-    const response = await fetch(url);
+    const res = await fetch(url + "&t=" + Date.now());
 
-    const text = await response.text();
+    const text = await res.text();
 
     const rows = text
-        .trim()
         .split(/\r?\n/)
-        .map(r=>r.split(","));
+        .filter(r => r.trim() !== "")
+        .map(row =>
+            row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+               .map(c => c.replace(/^"(.*)"$/, "$1"))
+        );
 
     return rows;
-
 }
 
-async function init(){
+async function init() {
 
-    const tkb = await fetchCSV(urlTKB);
+    try{
 
-    const monHoc = await fetchCSV(urlMonHoc);
+        const tkb = await fetchCSV(urlTKB);
 
-    console.log("===== TKB =====");
-    console.table(tkb);
+        const monHoc = await fetchCSV(urlMonHoc);
 
-    console.log("===== MON HOC =====");
-    console.table(monHoc);
+        console.log(tkb);
+
+        console.log(monHoc);
+
+        document.body.innerHTML +=
+        `<pre>
+TKB:
+${JSON.stringify(tkb,null,2)}
+
+----------------------------
+
+MON_HOC:
+${JSON.stringify(monHoc,null,2)}
+</pre>`;
+
+    }
+    catch(e){
+
+        console.error(e);
+
+        document.body.innerHTML +=
+        `<h2 style="color:red">${e}</h2>`;
+
+    }
 
 }
 
