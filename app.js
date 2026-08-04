@@ -357,6 +357,12 @@ function drawBag(tkb, subjectMap){
 
 function startPhotoSlide(photoData){
 
+    photos = photoData
+        .map(x => (x["Link"] || "").trim())
+        .filter(x => x !== "");
+
+    console.log("photos =", photos);
+
     const img = document.getElementById("familyPhoto");
 
     console.log("Ảnh đầu tiên:", photos[0]);
@@ -367,10 +373,9 @@ function startPhotoSlide(photoData){
         console.log("Đã tải ảnh");
     };
 
-    img.onerror = (e) => {
-        console.log("Lỗi tải ảnh", e);
+    img.onerror = () => {
+        console.log("Lỗi tải ảnh");
     };
-
 }
 //==================================================
 // PART 3/3
