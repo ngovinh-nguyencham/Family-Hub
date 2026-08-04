@@ -69,6 +69,16 @@ table{
 
 }
 
+table{
+    border-collapse:collapse;
+    width:100%;
+}
+
+table th,
+table td{
+    border:1px solid #444;
+}
+
 th{
 
     background:#1976d2;
