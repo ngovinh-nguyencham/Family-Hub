@@ -16,9 +16,17 @@ const urlTKB =
 
 const urlMON =
 `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=757851887`;
+
 const urlPHOTO =
 `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=332630721`;
 
+//=========================
+// ẢNH GIA ĐÌNH
+//=========================
+
+let photos = [];
+let currentPhoto = 0;
+let slideTimer = null;
 
 //=========================
 // ĐỌC FILE CSV
@@ -342,6 +350,58 @@ function drawBag(tkb, subjectMap){
     document.getElementById("todayBag").innerHTML = html;
 
 }
+
+//=========================
+// SLIDESHOW ẢNH
+//=========================
+
+function startPhotoSlide(photoData){
+
+    photos = photoData
+        .map(x => (x["Link"] || "").trim())
+        .filter(x => x !== "");
+
+    if(photos.length === 0) return;
+
+    const img = document.getElementById("familyPhoto");
+
+    currentPhoto = Math.floor(Math.random() * photos.length);
+
+    img.src = photos[currentPhoto];
+
+    if(slideTimer){
+
+        clearInterval(slideTimer);
+
+    }
+
+    slideTimer = setInterval(()=>{
+
+        img.style.opacity = 0;
+
+        setTimeout(()=>{
+
+            currentPhoto++;
+
+            if(currentPhoto >= photos.length){
+
+                currentPhoto = 0;
+
+            }
+
+            img.src = photos[currentPhoto];
+
+            img.onload = ()=>{
+
+                img.style.opacity = 1;
+
+            };
+
+        },500);
+
+    },5000);
+
+}
 //==================================================
 // PART 3/3
 // KHỞI ĐỘNG
@@ -352,9 +412,10 @@ async function init(){
     try{
 
         // Đọc đồng thời 2 Google Sheet
-        const [tkb, monhoc] = await Promise.all([
+        const [tkb, monhoc, photoData] = await Promise.all([
             fetchCSV(urlTKB),
-            fetchCSV(urlMON)
+            fetchCSV(urlMON),
+            fetchCSV(urlPHOTO)
         ]);
 
         // Không có dữ liệu
@@ -377,6 +438,8 @@ async function init(){
         drawSchedule(tkb, subjectMap);
 
         drawBag(tkb, subjectMap);
+
+        startPhotoSlide(photoData);
 
     }
     catch(err){
