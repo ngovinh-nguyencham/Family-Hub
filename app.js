@@ -1,9 +1,8 @@
-//==================================================
+//======================================================
 // FAMILY HUB
-// APP.JS
-// PART 1/3
-//==================================================
-
+// app.js
+// Part 1/4
+//======================================================
 
 //=========================
 // GOOGLE SHEET
@@ -32,19 +31,20 @@ async function fetchCSV(url){
         .split(/\r?\n/)
         .filter(r => r.trim() !== "")
         .map(r =>
-            r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+            r
+            .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
             .map(c => c.replace(/^"(.*)"$/, "$1"))
         );
 
     const header = rows[0];
 
-    return rows.slice(1).map(r=>{
+    return rows.slice(1).map(row=>{
 
         let obj = {};
 
         header.forEach((h,i)=>{
 
-            obj[h] = r[i] || "";
+            obj[h] = row[i] || "";
 
         });
 
@@ -74,7 +74,6 @@ function getTodayColumn(){
         case 6: return "Thứ 7";
 
         default:
-
             return "Chủ Nhật";
 
     }
@@ -84,35 +83,32 @@ function getTodayColumn(){
 
 
 //=========================
-// TẠO SUBJECT MAP
+// MAP MÔN HỌC
 //=========================
 
 function createSubjectMap(monhoc){
 
     const map = {};
 
-    monhoc.forEach(m=>{
+    monhoc.forEach(item=>{
 
-        map[m["Môn"]] = m;
+        map[item["Môn"]] = item;
 
     });
 
     return map;
 
 }
-
-
-
 //=========================
 // HIỂN THỊ THỜI KHÓA BIỂU
 //=========================
 
 function drawSchedule(tkb, subjectMap){
 
-    if(tkb.length===0){
+    if(tkb.length === 0){
 
         document.getElementById("schedule").innerHTML =
-        "<p>Không có dữ liệu.</p>";
+            "<p>Không có dữ liệu.</p>";
 
         return;
 
@@ -120,11 +116,12 @@ function drawSchedule(tkb, subjectMap){
 
     let html = "<table>";
 
+    // Tiêu đề
     html += "<tr>";
 
-    Object.keys(tkb[0]).forEach(h=>{
+    Object.keys(tkb[0]).forEach(col=>{
 
-        html += `<th>${h}</th>`;
+        html += `<th>${col}</th>`;
 
     });
 
@@ -132,40 +129,32 @@ function drawSchedule(tkb, subjectMap){
 
 
 
-    // Danh sách môn đã hiển thị
-    const usedSubjects = new Set();
-
+    // Nội dung
     tkb.forEach(row=>{
 
-        const mon = row[today];
+        html += "<tr>";
 
-        if(!mon || mon.trim()==="" || mon==="-") return;
+        Object.values(row).forEach(value=>{
 
-        // Nếu môn đã có rồi thì bỏ qua
-        if(usedSubjects.has(mon)) return;
+            const info = subjectMap[value];
 
-        usedSubjects.add(mon);
-
-        const info = subjectMap[mon];
-
-        if(!info) return;
+            if(info){
 
                 const color = info["Màu"] || "#eeeeee";
 
                 html += `
-                <td
-                    style="
-                        background:${color};
-                        color:#333333;
-                        font-weight:600;
-                        border:1px solid ${color};
-                    ">
-                    ${value}
-                </td>
+                    <td
+                        style="
+                            background:${color};
+                            color:#333;
+                            font-weight:600;
+                            border:1px solid ${color};
+                        ">
+                        ${value}
+                    </td>
                 `;
 
             }
-
             else{
 
                 html += `<td>${value}</td>`;
@@ -183,16 +172,18 @@ function drawSchedule(tkb, subjectMap){
     document.getElementById("schedule").innerHTML = html;
 
 }
-//==================================================
-// PART 2/3
+//=========================
 // HÔM NAY CẦN MANG
-//==================================================
+//=========================
 
 function drawBag(tkb, subjectMap){
 
     const today = getTodayColumn();
 
     let html = "";
+
+    // Chỉ lấy mỗi môn 1 lần
+    const usedSubjects = new Set();
 
     tkb.forEach(row=>{
 
@@ -201,13 +192,18 @@ function drawBag(tkb, subjectMap){
         // Bỏ ô trống hoặc dấu -
         if(!mon || mon.trim()==="" || mon==="-" ) return;
 
+        // Nếu môn đã có thì bỏ qua
+        if(usedSubjects.has(mon)) return;
+
+        usedSubjects.add(mon);
+
         const info = subjectMap[mon];
 
         if(!info) return;
 
         const color = info["Màu"] || "#64B5F6";
 
-        // Đồ dùng
+        // Danh sách đồ dùng
         const tools = (info["Đồ dùng"] || "")
             .split("|")
             .map(x=>x.trim())
@@ -226,11 +222,11 @@ function drawBag(tkb, subjectMap){
             <h3
                 style="
                     background:${color};
-                    color:#333333;
+                    color:#333;
                     padding:8px;
                     border-radius:8px;
-                    margin-bottom:10px;
                     text-align:center;
+                    margin-bottom:10px;
                 ">
                 ${mon}
             </h3>
@@ -255,7 +251,7 @@ function drawBag(tkb, subjectMap){
             }
 
             ${
-                tools!==""
+                tools
                 ?`<hr>${tools}`
                 :""
             }
@@ -279,23 +275,22 @@ function drawBag(tkb, subjectMap){
     document.getElementById("todayBag").innerHTML = html;
 
 }
-//==================================================
-// PART 3/3
+//=========================
 // KHỞI ĐỘNG
-//==================================================
+//=========================
 
 async function init(){
 
     try{
 
-        // Đọc đồng thời 2 Google Sheet
+        // Đọc dữ liệu từ Google Sheet
         const [tkb, monhoc] = await Promise.all([
             fetchCSV(urlTKB),
             fetchCSV(urlMON)
         ]);
 
         // Không có dữ liệu
-        if(tkb.length===0){
+        if(tkb.length === 0){
 
             document.getElementById("schedule").innerHTML =
                 "<p>Không có dữ liệu thời khóa biểu.</p>";
@@ -307,43 +302,68 @@ async function init(){
 
         }
 
-        // Tạo Map môn học để tìm nhanh
+        // Tạo Subject Map
         const subjectMap = createSubjectMap(monhoc);
 
-        // Hiển thị
+        // Hiển thị thời khóa biểu
         drawSchedule(tkb, subjectMap);
 
+        // Hiển thị đồ cần mang
         drawBag(tkb, subjectMap);
 
     }
     catch(err){
 
-        console.error(err);
+        console.error("Family Hub Error:", err);
 
-        document.getElementById("schedule").innerHTML =
-            "<p>Lỗi kết nối Google Sheet.</p>";
+        document.getElementById("schedule").innerHTML = `
+            <div class="item">
+                ❌ Không tải được Google Sheet
+            </div>
+        `;
 
-        document.getElementById("todayBag").innerHTML =
-            "<p>Không tải được dữ liệu.</p>";
+        document.getElementById("todayBag").innerHTML = `
+            <div class="item">
+                ❌ Không tải được dữ liệu
+            </div>
+        `;
 
     }
 
 }
 
 
-//==================================================
-// REFRESH TỰ ĐỘNG
-//==================================================
 
-// Cập nhật mỗi 5 phút
+//=========================
+// REFRESH TỰ ĐỘNG
+//=========================
+
+// Làm mới dữ liệu mỗi 5 phút
 setInterval(init, 5 * 60 * 1000);
 
 
-//==================================================
-// START
-//==================================================
 
-document.addEventListener("DOMContentLoaded", () => {
+//=========================
+// REFRESH KHI TAB ĐƯỢC MỞ LẠI
+//=========================
+
+document.addEventListener("visibilitychange", ()=>{
+
+    if(!document.hidden){
+
+        init();
+
+    }
+
+});
+
+
+
+//=========================
+// START
+//=========================
+
+document.addEventListener("DOMContentLoaded", ()=>{
 
     init();
 
