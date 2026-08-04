@@ -1,3 +1,10 @@
+//==================================================
+// FAMILY HUB
+// APP.JS
+// PART 1/3
+//==================================================
+
+
 //=========================
 // GOOGLE SHEET
 //=========================
@@ -23,7 +30,7 @@ async function fetchCSV(url){
 
     const rows = text
         .split(/\r?\n/)
-        .filter(r => r.trim() != "")
+        .filter(r => r.trim() !== "")
         .map(r =>
             r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
             .map(c => c.replace(/^"(.*)"$/, "$1"))
@@ -46,6 +53,7 @@ async function fetchCSV(url){
     });
 
 }
+
 
 
 //=========================
@@ -74,26 +82,44 @@ function getTodayColumn(){
 }
 
 
+
 //=========================
-// LẤY THÔNG TIN MÔN
+// TẠO SUBJECT MAP
 //=========================
 
-function getSubjectInfo(monhoc,name){
+function createSubjectMap(monhoc){
 
-    return monhoc.find(x=>x["Môn"]===name);
+    const map = {};
+
+    monhoc.forEach(m=>{
+
+        map[m["Môn"]] = m;
+
+    });
+
+    return map;
 
 }
+
+
+
 //=========================
 // HIỂN THỊ THỜI KHÓA BIỂU
 //=========================
 
-function drawSchedule(tkb, monhoc){
+function drawSchedule(tkb, subjectMap){
 
-    if(tkb.length===0) return;
+    if(tkb.length===0){
+
+        document.getElementById("schedule").innerHTML =
+        "<p>Không có dữ liệu.</p>";
+
+        return;
+
+    }
 
     let html = "<table>";
 
-    // Tiêu đề
     html += "<tr>";
 
     Object.keys(tkb[0]).forEach(h=>{
@@ -104,14 +130,15 @@ function drawSchedule(tkb, monhoc){
 
     html += "</tr>";
 
-    // Nội dung
+
+
     tkb.forEach(row=>{
 
         html += "<tr>";
 
         Object.values(row).forEach(value=>{
 
-            const info = getSubjectInfo(monhoc,value);
+            const info = subjectMap[value];
 
             if(info){
 
@@ -121,15 +148,17 @@ function drawSchedule(tkb, monhoc){
                 <td
                     style="
                         background:${color};
-                        color:#ffffff;
-                        font-weight:bold;
+                        color:#333333;
+                        font-weight:600;
                         border:1px solid ${color};
                     ">
                     ${value}
                 </td>
                 `;
 
-            }else{
+            }
+
+            else{
 
                 html += `<td>${value}</td>`;
 
@@ -146,11 +175,12 @@ function drawSchedule(tkb, monhoc){
     document.getElementById("schedule").innerHTML = html;
 
 }
-//=========================
+//==================================================
+// PART 2/3
 // HÔM NAY CẦN MANG
-//=========================
+//==================================================
 
-function drawBag(tkb, monhoc){
+function drawBag(tkb, subjectMap){
 
     const today = getTodayColumn();
 
@@ -160,73 +190,153 @@ function drawBag(tkb, monhoc){
 
         const mon = row[today];
 
-        if(!mon || mon=="") return;
+        // Bỏ ô trống hoặc dấu -
+        if(!mon || mon.trim()==="" || mon==="-" ) return;
 
-        const info = getSubjectInfo(monhoc, mon);
+        const info = subjectMap[mon];
 
         if(!info) return;
 
-        const color = info["Màu"] || "#2196F3";
+        const color = info["Màu"] || "#64B5F6";
 
+        // Đồ dùng
         const tools = (info["Đồ dùng"] || "")
             .split("|")
-            .filter(x=>x.trim()!="")
+            .map(x=>x.trim())
+            .filter(x=>x!=="")
             .map(x=>`<div>🧰 ${x}</div>`)
             .join("");
 
         html += `
-        <div class="item"
-            style="border-left:8px solid ${color};">
 
-            <h3 style="color:${color}">
+        <div class="item"
+            style="
+                border-left:8px solid ${color};
+                background:#ffffff;
+            ">
+
+            <h3
+                style="
+                    background:${color};
+                    color:#333333;
+                    padding:8px;
+                    border-radius:8px;
+                    margin-bottom:10px;
+                    text-align:center;
+                ">
                 ${mon}
             </h3>
 
             ${
-                info["Sách Giáo Khoa"]=="TRUE"
+                info["Sách Giáo Khoa"]==="TRUE"
                 ?"<div>📘 Sách Giáo Khoa</div>"
                 :""
             }
 
             ${
-                info["Sách Bài Tập"]=="TRUE"
+                info["Sách Bài Tập"]==="TRUE"
                 ?"<div>📗 Sách Bài Tập</div>"
                 :""
             }
 
             ${
-                info["Vở"]!="-"
+                info["Vở"] &&
+                info["Vở"]!=="-"
                 ?`<div>📒 ${info["Vở"]}</div>`
                 :""
             }
 
-            ${tools}
+            ${
+                tools!==""
+                ?`<hr>${tools}`
+                :""
+            }
 
         </div>
+
         `;
 
     });
 
+    if(html===""){
+
+        html = `
+        <div class="item">
+            Hôm nay không có dữ liệu.
+        </div>
+        `;
+
+    }
+
     document.getElementById("todayBag").innerHTML = html;
 
 }
-
-
-
-//=========================
+//==================================================
+// PART 3/3
 // KHỞI ĐỘNG
-//=========================
+//==================================================
 
 async function init(){
 
-    const tkb = await fetchCSV(urlTKB);
+    try{
 
-    const monhoc = await fetchCSV(urlMON);
+        // Đọc đồng thời 2 Google Sheet
+        const [tkb, monhoc] = await Promise.all([
+            fetchCSV(urlTKB),
+            fetchCSV(urlMON)
+        ]);
 
-    drawSchedule(tkb, monhoc);
+        // Không có dữ liệu
+        if(tkb.length===0){
 
-    drawBag(tkb, monhoc);
+            document.getElementById("schedule").innerHTML =
+                "<p>Không có dữ liệu thời khóa biểu.</p>";
+
+            document.getElementById("todayBag").innerHTML =
+                "<p>Không có dữ liệu.</p>";
+
+            return;
+
+        }
+
+        // Tạo Map môn học để tìm nhanh
+        const subjectMap = createSubjectMap(monhoc);
+
+        // Hiển thị
+        drawSchedule(tkb, subjectMap);
+
+        drawBag(tkb, subjectMap);
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        document.getElementById("schedule").innerHTML =
+            "<p>Lỗi kết nối Google Sheet.</p>";
+
+        document.getElementById("todayBag").innerHTML =
+            "<p>Không tải được dữ liệu.</p>";
+
+    }
 
 }
 
-init();
+
+//==================================================
+// REFRESH TỰ ĐỘNG
+//==================================================
+
+// Cập nhật mỗi 5 phút
+setInterval(init, 5 * 60 * 1000);
+
+
+//==================================================
+// START
+//==================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    init();
+
+});
