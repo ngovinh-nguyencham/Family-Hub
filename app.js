@@ -140,35 +140,63 @@ function drawSchedule(tkb, subjectMap){
 
         html += "<tr>";
 
-        Object.values(row).forEach(value=>{
+        Object.entries(row).forEach(([key, value])=>{
 
-            const info = subjectMap[
-                (value || "")
-                    .trim()
-                    .toLowerCase()
-            ];
+            // Cột Tiết
+            if(key === "Tiết"){
 
-            if(info){
-
-                const color = info["Màu"] || "#eeeeee";
+                const tietColor = {
+                    "1":"#E8F5E9",
+                    "2":"#E3F2FD",
+                    "3":"#FFF3E0",
+                    "4":"#F3E5F5",
+                    "5":"#FCE4EC",
+                    "6":"#FFF9C4",
+                    "7":"#E0F2F1",
+                    "8":"#ECEFF1",
+                    "9":"#F1F8E9",
+                    "10":"#EDE7F6"
+                };
 
                 html += `
-                <td
-                    style="
-                        background:${color};
-                        color:#333333;
-                        font-weight:600;
-                        border:1px solid ${color};
+                    <td style="
+                        background:${tietColor[value] || "#eeeeee"};
+                        font-weight:bold;
+                        text-align:center;
                     ">
-                    ${value}
-                </td>
+                        Tiết ${value}
+                    </td>
                 `;
 
             }
-
             else{
 
-                html += `<td>${value}</td>`;
+                const info = subjectMap[
+                    (value || "")
+                        .trim()
+                        .toLowerCase()
+                ];
+
+                if(info){
+
+                    const color = info["Màu"] || "#eeeeee";
+
+                    html += `
+                        <td style="
+                            background:${color};
+                            color:#333;
+                            font-weight:600;
+                            border:1px solid ${color};
+                        ">
+                            ${value}
+                        </td>
+                    `;
+
+                }else{
+
+                    html += `<td>${value}</td>`;
+
+                }
 
             }
 
