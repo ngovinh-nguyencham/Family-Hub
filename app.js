@@ -16,6 +16,8 @@ const urlTKB =
 
 const urlMON =
 `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=757851887`;
+const urlPHOTO =
+`https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&gid=332630721`;
 
 
 //=========================
