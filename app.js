@@ -357,49 +357,19 @@ function drawBag(tkb, subjectMap){
 
 function startPhotoSlide(photoData){
 
-    photos = photoData
-        .map(x => (x["Link"] || "").trim())
-        .filter(x => x !== "");
-
-    if(photos.length === 0) return;
-
     const img = document.getElementById("familyPhoto");
 
-    currentPhoto = Math.floor(Math.random() * photos.length);
+    console.log("Ảnh đầu tiên:", photos[0]);
 
-    img.src = photos[currentPhoto];
+    img.src = photos[0];
 
-    if(slideTimer){
+    img.onload = () => {
+        console.log("Đã tải ảnh");
+    };
 
-        clearInterval(slideTimer);
-
-    }
-
-    slideTimer = setInterval(()=>{
-
-        img.style.opacity = 0;
-
-        setTimeout(()=>{
-
-            currentPhoto++;
-
-            if(currentPhoto >= photos.length){
-
-                currentPhoto = 0;
-
-            }
-
-            img.src = photos[currentPhoto];
-
-            img.onload = ()=>{
-
-                img.style.opacity = 1;
-
-            };
-
-        },500);
-
-    },5000);
+    img.onerror = (e) => {
+        console.log("Lỗi tải ảnh", e);
+    };
 
 }
 //==================================================
