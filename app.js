@@ -186,7 +186,6 @@ function drawSchedule(tkb, subjectMap){
                             background:${color};
                             color:#333;
                             font-weight:600;
-                            border:1px solid #444;
                         ">
                             ${value}
                         </td>
