@@ -207,34 +207,4 @@ td:hover{
     }
 
 }
-/*=========================
-ẢNH GIA ĐÌNH
-=========================*/
 
-#photoSlide{
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-}
-
-#familyPhoto{
-
-    width:100%;
-
-    max-height:550px;
-
-    object-fit:contain;
-
-    border-radius:16px;
-
-    box-shadow:0 6px 18px rgba(0,0,0,.18);
-
-    opacity:1;
-
-    transition:opacity .8s;
-
-}
