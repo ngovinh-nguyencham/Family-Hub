@@ -132,15 +132,23 @@ function drawSchedule(tkb, subjectMap){
 
 
 
+    // Danh sách môn đã hiển thị
+    const usedSubjects = new Set();
+
     tkb.forEach(row=>{
 
-        html += "<tr>";
+        const mon = row[today];
 
-        Object.values(row).forEach(value=>{
+        if(!mon || mon.trim()==="" || mon==="-") return;
 
-            const info = subjectMap[value];
+        // Nếu môn đã có rồi thì bỏ qua
+        if(usedSubjects.has(mon)) return;
 
-            if(info){
+        usedSubjects.add(mon);
+
+        const info = subjectMap[mon];
+
+        if(!info) return;
 
                 const color = info["Màu"] || "#eeeeee";
 
