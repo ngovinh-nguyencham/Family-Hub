@@ -100,23 +100,22 @@ function drawSchedule(tkb,monhoc){
 
             });
 
-            if(color){
+            if (color) {
 
-                html+=`
+                html += `
                 <td
-                style="
-                background:${color}22;
-                color:#333;
-                border:1px solid ${color};
-                font-weight:bold;
-                ">
-                ${v}
-                </td>
-                `;
+                    style="
+                        background:${color};
+                        color:#ffffff;
+                        font-weight:bold;
+                        border:1px solid ${color};
+                    ">
+                    ${v}
+                </td>`;
 
-            }else{
+            } else {
 
-                html+=`<td>${v}</td>`;
+                html += `<td>${v}</td>`;
 
             }
 
